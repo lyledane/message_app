@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:message_app/screens/login_screen.dart';
 import 'package:message_app/screens/registration_screen.dart';
+import 'package:animated_text_kit/animated_text_kit.dart';
 
 class WelcomeScreen extends StatefulWidget {
   static String id = 'welcome_screen';
@@ -56,13 +57,22 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                     height: 60.0,
                   ),
                 ),
-                Text(
-                  ' Chat App',
-                  style: TextStyle(
-                    fontSize: 35.0,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
+                AnimatedTextKit(
+                  animatedTexts: [
+                    TypewriterAnimatedText(
+                      ' Chat App!',
+                      textStyle: TextStyle(
+                        fontSize: 35.0,
+                        fontWeight: FontWeight.w900,
+                      ),
+                      speed: const Duration(milliseconds: 50),
+                    ),
+                  ],
+                  repeatForever: true,
+                  // pause: const Duration(milliseconds: 500),
+                  displayFullTextOnTap: true,
+                  stopPauseOnTap: true,
+                )
               ],
             ),
             SizedBox(
