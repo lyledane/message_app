@@ -1,7 +1,7 @@
 class Message {
   String domainId;
-  String re;
+  String text;
   DateTime date;
 
-  Message(this.domainId, this.re, this.date);
+  Message(this.domainId, this.text, this.date);
 }

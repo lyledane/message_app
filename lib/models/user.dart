@@ -1,6 +1,7 @@
-class User {
+class AppUser {
   String name;
-  String id;
+  String uid;
+  String email;
 
-  User(this.name, this.id);
+  AppUser({this.name, this.uid, this.email});
 }
