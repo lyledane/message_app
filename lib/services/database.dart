@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:collection/collection.dart';
 
 class DatabaseService {
   FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -11,11 +10,13 @@ class DatabaseService {
   }
 
   addChatroom(userData) async {
+    print(userData);
     String id;
     try {
-      await _firestore.collection("chatRoom").add(userData).then((value) {
-        id = value.id;
-      });
+      await _firestore
+          .collection("chatRoom")
+          .add(userData)
+          .then((value) => id = value.id);
       return id;
     } catch (e) {
       return null;
@@ -62,18 +63,6 @@ class DatabaseService {
           .doc(chatroom)
           .collection('chat')
           .add(message);
-    } catch (e) {}
-  }
-
-  getUserInfo(String email) async {
-    QuerySnapshot df;
-    try {
-      df = await _firestore
-          .collection("users")
-          .where("userEmail", isEqualTo: email)
-          .get();
-
-      return df.size == 0 ? null : df.docs[0].data()['userName'];
     } catch (e) {}
   }
 
