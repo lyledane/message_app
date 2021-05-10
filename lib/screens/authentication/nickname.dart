@@ -74,9 +74,8 @@ class _NicknameState extends State<Nickname> {
                                     "userName": _nickName.text,
                                     "userEmail": widget.email,
                                   };
-                                  await HelperFunctions.saveEmail(widget.email);
-                                  await HelperFunctions.saveUserName(
-                                      _nickName.text);
+                                  HelperFunctions.saveEmail(widget.email);
+                                  HelperFunctions.saveUserName(_nickName.text);
                                   dynamic result = await _authService.signUp(
                                       widget.email,
                                       widget.pass,
@@ -84,9 +83,9 @@ class _NicknameState extends State<Nickname> {
                                   if (result != null) {
                                     await _databaseService
                                         .addUserInfo(userDataMap);
+                                    HelperFunctions.saveEmail('');
+                                    HelperFunctions.saveUserName('');
                                   } else if (result == null) {
-                                    await HelperFunctions.saveEmail('');
-                                    await HelperFunctions.saveUserName('');
                                     setState(() => loading = false);
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(

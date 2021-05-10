@@ -1,9 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:message_app/helpers/constants.dart';
 import 'package:message_app/screens/loading.dart';
 import 'package:message_app/services/database.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 class Search extends StatefulWidget {
   @override
@@ -38,15 +38,30 @@ class _SearchState extends State<Search> {
 
   sendMessage(String userName, context) async {
     List<dynamic> recipients = [userName, Constants.myName];
-    Map<String, List<dynamic>> members = {'members': recipients};
+    List<dynamic> isRead = [];
+    recipients.forEach((element) {
+      isRead.add('false');
+    });
+    print(isRead);
+
+    setState(() => toMessageload = true);
     dynamic crExist = await doesChatRoomExist(recipients);
     print(crExist);
     if (crExist == null) {
+      Map<String, dynamic> members = {
+        'members': recipients,
+        'isRead': isRead,
+        'latestMessage': DateTime.now().microsecondsSinceEpoch,
+      };
+      //
+      //
+      // Map<String, List<dynamic>> members = {'members': recipients};
       dynamic result = await _databaseService.addChatroom(members);
-
+      print('crdoesnt exist');
+      print(result);
       if (result != null) {
         print('inside not null');
-        setState(() => toMessageload = true);
+
         Navigator.popAndPushNamed(context, '/Messages',
             arguments: {'uid': result, 'name': userName});
       } else {

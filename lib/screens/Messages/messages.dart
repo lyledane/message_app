@@ -1,8 +1,13 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:bubble/bubble.dart';
 import 'package:message_app/helpers/constants.dart';
 import 'package:message_app/services/database.dart';
+import 'package:message_app/services/storage.dart';
+import 'package:image_picker/image_picker.dart';
 
 class Messages extends StatefulWidget {
   @override
@@ -15,6 +20,7 @@ class _MessagesState extends State<Messages> {
   Map arguments;
   Stream<QuerySnapshot> _chats;
   DatabaseService _service = DatabaseService();
+  String _imageFile;
 
   @override
   void initState() {
@@ -49,25 +55,63 @@ class _MessagesState extends State<Messages> {
                               document.data()['sender'] == Constants.myName;
                           return Container(
                             padding: EdgeInsets.fromLTRB(20, 7, 20, 7),
-                            child: Bubble(
-                              elevation: 3,
-                              alignment: isSender
-                                  ? Alignment.topRight
-                                  : Alignment.topLeft,
-                              // nipWidth: 8,
-                              // nipHeight: 24,
-                              nip: isSender
-                                  ? BubbleNip.rightTop
-                                  : BubbleNip.leftTop,
-                              color: isSender
-                                  ? Colors.green[200]
-                                  : Colors.blue[200],
-                              child: Text(
-                                document.data()['message'],
-                                textAlign:
-                                    isSender ? TextAlign.right : TextAlign.left,
+                            child: Column(children: [
+                              Container(
+                                width: MediaQuery.of(context).size.width,
+                                child: Text(
+                                  document.data()['sender'],
+                                  textAlign: isSender
+                                      ? TextAlign.right
+                                      : TextAlign.left,
+                                ),
                               ),
-                            ),
+                              Bubble(
+                                elevation: 3,
+                                alignment: isSender
+                                    ? Alignment.topRight
+                                    : Alignment.topLeft,
+                                // nipWidth: 8,
+                                // nipHeight: 24,
+                                nip: isSender
+                                    ? BubbleNip.rightTop
+                                    : BubbleNip.leftTop,
+                                color: isSender
+                                    ? Colors.green[200]
+                                    : Colors.blue[200],
+                                child:
+                                    document.data()['message_type'] == "String"
+                                        ? Text(
+                                            document.data()['message'],
+                                            textAlign: isSender
+                                                ? TextAlign.right
+                                                : TextAlign.left,
+                                          )
+                                        : Container(
+                                            padding: EdgeInsets.all(5),
+                                            child: Image.network(
+                                                document.data()['message']),
+                                            constraints: BoxConstraints(
+                                              maxHeight: (MediaQuery.of(context)
+                                                      .size
+                                                      .height /
+                                                  2),
+                                              maxWidth: (MediaQuery.of(context)
+                                                          .size
+                                                          .width /
+                                                      3) *
+                                                  2,
+                                              minWidth: MediaQuery.of(context)
+                                                      .size
+                                                      .width /
+                                                  4,
+                                              minHeight: MediaQuery.of(context)
+                                                      .size
+                                                      .width /
+                                                  4,
+                                            ),
+                                          ),
+                              ),
+                            ]),
                           );
                         }).toList(),
                       )
@@ -80,6 +124,21 @@ class _MessagesState extends State<Messages> {
             alignment: Alignment.bottomCenter,
             child: Row(
               children: [
+                IconButton(
+                    icon: Icon(Icons.attach_file),
+                    onPressed: () async {
+                      await _pickImage();
+                      if (_imageFile != null) {
+                        print(_imageFile);
+                        Map<String, dynamic> mess = {
+                          'time': DateTime.now().microsecondsSinceEpoch,
+                          'message': _imageFile,
+                          'sender': Constants.myName,
+                          'message_type': 'Image'
+                        };
+                        await _service.sendMessage(mess, arguments['uid']);
+                      }
+                    }),
                 Expanded(
                     child: TextField(
                   controller: message,
@@ -92,9 +151,10 @@ class _MessagesState extends State<Messages> {
                     onPressed: () async {
                       if (message.text != "") {
                         Map<String, dynamic> mess = {
-                          'time': DateTime.now().millisecondsSinceEpoch,
+                          'time': DateTime.now().microsecondsSinceEpoch,
                           'message': message.text,
                           'sender': Constants.myName,
+                          'message_type': 'String'
                         };
                         await _service.sendMessage(mess, arguments['uid']);
                         setState(() {
@@ -109,22 +169,19 @@ class _MessagesState extends State<Messages> {
       ),
     );
   }
-}
 
-// Scaffold(
-//       appBar: AppBar(
-//         title: Text('UserName'),
-//       ),
-//       body: ListView.builder(
-//         itemBuilder: (context, index) {
-//           return Bubble(
-//             margin: BubbleEdges.all(10),
-//             child: Text(
-//               '',
-//               textAlign: TextAlign.end,
-//             ),
-//           );
-//         },
-//         itemCount: 0,
-//       ),
-//     );
+  Future<void> _pickImage() async {
+    setState(() {
+      _imageFile = null;
+    });
+    final selected = await ImagePicker.pickImage(source: ImageSource.gallery);
+    if (selected != null) {
+      print(selected.path);
+      String filestring =
+          await StorageService().startUpload(File(selected.path));
+      setState(() {
+        _imageFile = filestring;
+      });
+    }
+  }
+}

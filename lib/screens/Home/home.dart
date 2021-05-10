@@ -2,9 +2,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:message_app/helpers/constants.dart';
 import 'package:message_app/helpers/helperfunctions.dart';
+import 'package:message_app/screens/loading.dart';
+
 import 'package:message_app/services/auth.dart';
 import 'package:message_app/services/database.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class Home extends StatefulWidget {
   @override
@@ -14,14 +15,7 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   AuthService _authService = AuthService();
   DatabaseService _databaseService = DatabaseService();
-  Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
   Stream _chatlist;
-  String myName;
-  @override
-  void initState() {
-    getUserInfo();
-    super.initState();
-  }
 
   getRecipient(members) {
     List<dynamic> recipients = members;
@@ -29,12 +23,15 @@ class _HomeState extends State<Home> {
     return recipients.toString().replaceAll('[', '').replaceAll(']', '');
   }
 
+  @override
+  void initState() {
+    getUserInfo();
+    super.initState();
+  }
+
   getUserInfo() async {
     var newName = await HelperFunctions.getUserName();
-    setState(() {
-      Constants.myName = newName;
-    });
-    print(Constants.myName);
+    setState(() => Constants.myName = newName);
     dynamic that = await _databaseService.getUserChatList(Constants.myName);
     setState(() {
       _chatlist = that;
@@ -43,6 +40,10 @@ class _HomeState extends State<Home> {
 
   @override
   Widget build(BuildContext context) {
+    closeApp() {
+      // Navigator.pop(context);
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: Text(Constants.myName),
@@ -84,7 +85,9 @@ class _HomeState extends State<Home> {
               onTap: () {
                 Navigator.pop(context);
                 Constants.myName = "";
+
                 _authService.signOut();
+                closeApp();
               },
             )
           ],

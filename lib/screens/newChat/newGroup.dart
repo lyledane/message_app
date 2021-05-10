@@ -1,9 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:message_app/helpers/constants.dart';
 import 'package:message_app/screens/loading.dart';
 import 'package:message_app/services/database.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 class NewGroup extends StatefulWidget {
   @override
@@ -38,11 +38,19 @@ class _NewGroupState extends State<NewGroup> {
 
   sendGroupMessage(context) async {
     recipients.add(Constants.myName);
+    List<dynamic> isRead = [];
+    recipients.forEach((element) {
+      isRead.add('false');
+    });
 
     dynamic crExist = await doesChatRoomExist(recipients);
     if (crExist == null) {
       print('crnull');
-      Map<String, List<dynamic>> members = {'members': recipients};
+      Map<String, dynamic> members = {
+        'members': recipients,
+        'isRead': isRead,
+        'latestMessage': DateTime.now().microsecondsSinceEpoch,
+      };
       dynamic result = await _databaseService.addChatroom(members);
 
       if (result != null) {

@@ -63,7 +63,6 @@ class _SignUpState extends State<SignUp> {
                   child: Column(
                     children: [
                       TextFormField(
-                        keyboardType: TextInputType.emailAddress,
                         validator: (value) =>
                             value.isEmpty ? 'Enter an email' : null,
                         controller: _email,
@@ -104,17 +103,13 @@ class _SignUpState extends State<SignUp> {
                         onPressed: () async {
                           if (_formKey.currentState.validate()) {
                             setState(() => loading = true);
-                            dynamic userName = await DatabaseService()
-                                .getUserInfo(_email.text);
-                            await HelperFunctions.saveEmail(_email.text);
-                            await HelperFunctions.saveUserName(
-                                userName == null ? '' : userName);
+
                             dynamic result = await _authService.logIn(
                                 _email.text, _pass.text);
-
-                            if (result == null) {
-                              await HelperFunctions.saveEmail('');
-                              await HelperFunctions.saveUserName('');
+                            if (result != null) {
+                              HelperFunctions.saveEmail(result.email);
+                              HelperFunctions.saveUserName(result.name);
+                            } else if (result == null) {
                               setState(() => loading = false);
                               ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(content: Text('Error Login')));
